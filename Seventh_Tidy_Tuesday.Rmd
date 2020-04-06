@@ -1,0 +1,72 @@
+---
+title: "7th Tidy Tuesday"
+author: "Julianne Gallagher"
+date: "4/5/2020"
+output: html_document
+theme: journal
+highlight: tango
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(ggforce)
+```
+
+```{r}
+brewer_sizes <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-03-31/brewer_size.csv')
+
+brewer_sizes
+```
+```{r}
+###--TIDYING DATA--###
+brewer_levels = c("Zero Barrels", "Under 1 Barrel", "1 to 1,000 Barrels", "1,001 to 7,500 Barrels", "7,501 to 15,000 Barrels", "15,001 to 30,000 Barrels", "30,001 to 60,000 Barrels", "60,001 to 100,000 Barrels", "100,001 to 500,000 Barrels", "500,001 to 1,000,000 Barrels")
+
+brewer_sizes %>%
+  # filter only total out 
+dplyr::filter(brewer_size != "Total") %>%
+  # order in a better way look above
+dplyr::mutate(brewer_factor = factor(brewer_size, levels =brewer_levels)) %>%
+  # remove values with na's 
+tidyr::drop_na() -> brewer
+
+#view 
+brewer
+
+##--Assertion--##  
+brewer_sizes %>% 
+  filter(brewer_size != "Total") -> no_total 
+nrow(no_total) -> no_total_rows
+nrow(brewer_sizes) -> brewer_rows
+if(no_total_rows >= brewer_rows) {
+  stop("Total was not filtered")
+} else {
+  print("Total was filtered out, everything is fine")
+  }
+
+```
+
+
+```{r}
+###--MAKING FIGURE--###
+ggplot(brewer, aes(x= brewer_factor, y= n_of_brewers, color= year)) + 
+  # first sina plot 
+  geom_sina() + 
+  # no gridlines theme 
+  theme_classic() +
+  # angle of text on x-axis
+  theme(axis.text.x = element_text(angle = 90)) + 
+  # labels
+  labs(x= "Number of Barrels of Beer", y= "Number of Brewers", title = "Number of Barrels Brewed Compared to the Number of Brewers", color= "Year") + 
+  # bold title 
+  theme(plot.title = element_text(face= "bold")) + 
+  theme(plot.background = element_rect(color= "black")) -> seventh_fig
+
+#view
+seventh_fig
+
+#save as png 
+ggsave("brewer_beers.png", seventh_fig, height=4, width=7)
+```
+
+This tidy Tuesday I gained more practice with sina plots as this is the first one I have made. I learned how to filter and keep everything but one item using "!". Also in this assignment I had my first attempt at practicing assertions.  
